@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import os
+from datetime import datetime, timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -26,6 +27,11 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# 日志文件路径
+LOG_DIR = os.path.join(BASE_DIR, 'logs')
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR)
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -35,8 +41,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'first'
+    'stud_project',
+    'rest_framework',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -129,3 +147,56 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 日志打印
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,  # 避免覆盖默认日志器
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] [{levelname}] [{name}] [{lineno}] - {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '[{levelname}] {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {  # 输出到控制台
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+        'file': {  # 输出到文件
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, f'django_{datetime.now().strftime("%Y-%m-%d")}.log'),
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+        'sql_file': {  # 单独记录SQL语句
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(LOG_DIR, f'sql_{datetime.now().strftime("%Y-%m-%d")}.log'),
+            'formatter': 'verbose',
+            'encoding': 'utf-8',
+        },
+    },
+    'loggers': {
+        'django': {  # 默认Django日志
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'django.db.backends': {  # 数据库SQL语句
+            'handlers': ['sql_file', 'console'],
+            'level': 'DEBUG',
+            'propagate': False,
+        },
+        'stud_project': {  # 你自己的模块
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    }
+}
