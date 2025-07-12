@@ -46,9 +46,12 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK = {
+    # jwt接口校验
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    # 全部异常处理
+    'EXCEPTION_HANDLER': 'stud_project.utils.exception_handler.custom_exception_handler',
 }
 
 SIMPLE_JWT = {
@@ -148,7 +151,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# 日志打印
+# 全局日志格式化
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,  # 避免覆盖默认日志器

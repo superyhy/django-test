@@ -127,7 +127,6 @@ def subject_delete(request):
         return JsonResponse({'code': 500, 'message': str(e)}, status=500)
 
 
-
 @api_view(['POST'])
 @authentication_classes([MyJWTAuthentication])
 @permission_classes([IsAuthenticated])
@@ -145,8 +144,6 @@ def subject_update(request):
             raise ValidationError('登录失败')
         else:
             logger.info(str(user))
-        if request.method != 'POST':
-            raise ValidationError('仅支持POST请求')
         # 解析请求参数
         data = json.loads(request.body.decode('utf-8'))
         # 参数校验
